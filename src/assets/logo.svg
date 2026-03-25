@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="skinGradient" cx="30%" cy="30%" r="90%" fx="30%" fy="30%">
+      <stop offset="0%" style="stop-color:#8e9e76;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#5a6b46;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2f3a22;stop-opacity:1" />
+    </radialGradient>
+    
+    <filter id="insetShadow">
+      <feOffset dx="0" dy="0"/>
+      <feGaussianBlur stdDeviation="5" result="offset-blur"/>
+      <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/>
+      <feFlood flood-color="black" flood-opacity="0.7" result="color"/>
+      <feComposite operator="in" in="color" in2="inverse" result="shadow"/>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
+    </filter>
+
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff9999" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#ff0000" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#400000" stop-opacity="1"/>
+    </radialGradient>
+
+    <linearGradient id="boneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8e8e0"/>
+      <stop offset="100%" stop-color="#bfbfb0"/>
+    </linearGradient>
+
+    <!-- 符咒纸纹理 -->
+    <filter id="paperTexture">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise"/>
+      <feDiffuseLighting in="noise" lighting-color="#f4d03f" surfaceScale="2">
+        <feDistantLight azimuth="45" elevation="60"/>
+      </feDiffuseLighting>
+    </filter>
+  </defs>
+
+  <!-- 鬃毛 -->
+  <path d="M320 80 Q 360 40 400 90 L 420 150 L 460 180 L 430 250 L 450 320 L 400 400 L 350 480 L 280 480 L 320 250 Z" 
+        fill="#2a2222" stroke="#111" stroke-width="2"/>
+
+  <!-- 颈部 -->
+  <path d="M300 480 Q 250 480 200 450 L 220 350 L 320 250 L 340 450 Z" 
+        fill="url(#skinGradient)" stroke="#1a2212" stroke-width="1"/>
+
+  <!-- 头部主体 -->
+  <path d="M330 100 Q 340 60 300 60 L 280 150 L 180 250 Q 150 280 130 330 L 130 380 Q 130 410 160 410 L 240 400 Q 280 400 320 350 Q 350 300 350 200 L 330 100 Z" 
+        fill="url(#skinGradient)" stroke="#1a2212" stroke-width="1" filter="url(#insetShadow)"/>
+
+  <!-- 耳朵 -->
+  <path d="M300 60 L 310 10 L 340 70 Z" fill="url(#skinGradient)" stroke="#1a2212" stroke-width="1"/>
+
+  <!-- 符咒 (僵尸特征) -->
+  <g transform="rotate(-5 280 100)">
+      <!-- 纸身 -->
+      <rect x="270" y="60" width="40" height="140" fill="#f1c40f" stroke="#d35400" stroke-width="1" rx="2" ry="2"/>
+      <!-- 符文 -->
+      <path d="M290 70 L 290 190 M 280 80 L 300 80 M 280 100 L 300 100 M 285 120 L 295 130 M 295 120 L 285 130 M 290 150 Q 280 160 280 170 Q 290 180 300 170" 
+            stroke="#c0392b" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="290" cy="185" r="2" fill="#c0392b"/>
+      <!-- 符咒阴影 -->
+      <path d="M270 200 L 310 200 L 300 210 L 280 210 Z" fill="#000" opacity="0.2"/>
+  </g>
+
+  <!-- 暴露的骨头 -->
+  <path d="M190 280 Q 220 270 240 290 L 230 340 L 180 340 Z" 
+        fill="url(#boneGradient)" stroke="#4a1a1a" stroke-width="1"/>
+  <path d="M190 280 Q 220 270 240 290" fill="none" stroke="#5a2a2a" stroke-width="2"/>
+  
+  <!-- 眼睛 -->
+  <circle cx="260" cy="180" r="8" fill="url(#eyeGlow)">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- 鼻孔 -->
+  <ellipse cx="150" cy="350" rx="6" ry="10" fill="#111" transform="rotate(-30 150 350)"/>
+  
+  <!-- 牙齿 -->
+  <g transform="translate(10, 10)">
+      <rect x="170" y="380" width="8" height="12" fill="#e8e8d0" stroke="#333" stroke-width="0.5"/>
+      <rect x="180" y="382" width="8" height="12" fill="#e8e8d0" stroke="#333" stroke-width="0.5"/>
+      <rect x="190" y="382" width="8" height="10" fill="#e8e8d0" stroke="#333" stroke-width="0.5"/>
+  </g>
+</svg>

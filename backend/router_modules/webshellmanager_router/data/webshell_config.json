@@ -1,0 +1,26 @@
+{
+  "upload": {
+    "chunkMbSize": 1.0,
+    "delaySeconds": 0.5,
+    "maxRetries": 5,
+    "autoSwitchSize": 10,
+    "enableChunkSizeVariation": true,
+    "chunkSizeVariationMb": 0.2
+  },
+  "download": {
+    "chunkKbSize": 512,
+    "timeoutSeconds": 1.0,
+    "enableChunkSizeVariation": false,
+    "chunkSizeVariationKb": 128,
+    "autoSwitchSize": 50
+  },
+  "general": {
+    "requestTimeout": 60,
+    "autoRefreshInterval": 0,
+    "enableDebugLog": false
+  },
+  "jspFunction": {
+    "classnameObfuscation": "random",
+    "specifiedClassname": "MyPayload"
+  }
+}

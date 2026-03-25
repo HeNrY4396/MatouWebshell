@@ -1,0 +1,29 @@
+
+<!DOCTYPE html><html><head lang=zh-CN><meta charset=UTF-8><meta name=viewport content="width=device-width, initial-scale=1.0"><meta http-equiv=X-UA-Compatible content="ie=edge"><style type=text/css> html{font-size:16px} body{font-family:'Microsoft Yahei',Helvtical,sans-serif;background:#fff}
+    .menshen501_21adc164210ee18c77d90a5bf00b7aae{justify-content:
+    center;margin-top:5rem;display:flex;flex-direction: row;}
+    .rt{display:flex;flex-direction:column;margin-left:3.125rem;} .rt .t1{font-size:2.125rem;font-weight:700;} .rt
+    .t2{font-size:1.125rem;font-weight: 600;margin-top:0.625rem;} .rt .btn{padding-top: 0.5rem;padding-bottom:
+    0.5rem;border-radius:0.3125rem;text-decoration: none;margin-top:3.125rem;width:7.8rem;text-align:center;} .rt
+    .btn.blue {background-color: #2f86f6;color: #fff;} .red{color:#ff8237;}
+    .le{width:6.25rem;height:6.25rem;font-size:5rem;line-height:6.25rem;font-weight:700;background-color:#ff8237;border-radius:50%;color:#fff;text-align:center}
+    </style>
+    <script src="https://cdn-go.cn/aegis/aegis-sdk/latest/aegis.min.js"></script>
+<script>
+function getCookie(name)
+{
+var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+if(arr=document.cookie.match(reg))
+    return unescape(arr[2]);
+else
+    return null;
+}
+const aegis = new Aegis({
+id: 'CmWPOXWRAjmrscKCzk',
+uin: getCookie('uin'),
+ext1: getCookie('uin'),
+reportApiSpeed: true,
+reportAssetSpeed: true,
+spa: true, 
+})
+</script></head><body><div class=menshen501_21adc164210ee18c77d90a5bf00b7aae><span class=le>!</span><div class=rt><span class=t1 id=menshen501_title></span> <span class=t2 id=menshen501_tip1></span> <span class="t2 red" id=menshen501_tip2></span> <a href=javascript:handleOnclick(); class="btn blue" id=menshen501_btn></a></div></div></body><script type=text/javascript>function getPre(e){return e&&e.length>256?e.substr(0,256):e}function GetQueryString(e,t){var n=e.match(new RegExp("[?&]"+t+"=([^&]+)","i"));return null==n||n.length<1?"":n[1]}function handleOnclick(){var e={clientInfo:getPre(GetQueryString(location.search,"u")),customInfo:getPre(GetQueryString(location.search,"v"))};Tucao.request("58632",e)}if(window.innerWidth<500){var fs=(16*window.innerWidth/500).toFixed(2);fs=10>fs?10:fs,document.getElementsByTagName("html")[0].style["font-size"]=fs+"px"}var Tucao=function(){var e=function(e,t){var n=document.createElement("form");n.id="form",n.name="form",document.body.appendChild(n);for(key in t){var r=document.createElement("input");r.type="text",r.name=key,r.value=t[key],n.appendChild(r)}n.method="GET",n.action="https://support.qq.com/product/"+e,n.submit(),document.body.removeChild(n)};return{request:e}}(),langCN={title:"501错误",tip1:"抱歉，当前页面无法正常访问！",tip2:"由于您提交的信息对网站可能造成威胁，<br/>出于安全考虑，您的访问被拦截。",btnTxt:"误报反馈"},langEN={title:"501 Error",tip1:"Sorry，The page is not accessible!",tip2:"Your access was blocked for security reasons.",btnTxt:"Feedback"},langHK={title:"501錯誤",tip1:"抱歉，當前頁面無法正常訪問！",tip2:"由於您提交的信息對網站可能造成威脅，<br/>出於安全考慮，您的訪問被攔截。",btnTxt:"誤報反饋"},lang=langCN;try{var str="";window.btoa&&window.atob&&(str=GetQueryString(window.decodeURIComponent(window.atob(GetQueryString(location.search,"v"))),"lang"),str||(str=navigator&&navigator.language)),str&&(str=str.toLocaleLowerCase(),["en","en-gb","en_gb","en-us","en_us"].indexOf(str)>-1?lang=langEN:["zh-tw","zh_tw","zh-hk","zh_hk"].indexOf(str)>-1&&(lang=langHK))}catch(e){}document.getElementById("menshen501_title").innerHTML=lang.title,document.getElementById("menshen501_tip1").innerHTML=lang.tip1,document.getElementById("menshen501_tip2").innerHTML=lang.tip2,document.getElementById("menshen501_btn").innerHTML=lang.btnTxt;</script></html>

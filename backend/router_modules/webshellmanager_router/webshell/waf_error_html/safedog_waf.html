@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>拦截页面</title>
+    <style type="text/css">
+      body {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      #max {
+        width: 100%;
+        padding: 0;
+        margin: 0 auto;
+      }
+      #top {
+        width: 150px;
+        margin: 0 auto;
+        padding-top: 60px;
+      }
+      #warm {
+        margin: 20px 0 15px 0;
+        font-size: 24px;
+        color: #606266;
+        text-align: center;
+      }
+      #tip {
+        width: 800px;
+        margin: 0 auto;
+        padding-top: 10px;
+        padding-bottom: 20px;
+        border: #dfdfdf solid 1px;
+        border-radius: 6px;
+        color: #808288;
+        font-size: 16px;
+      }
+      p {
+        padding-left: 200px;
+      }
+      #example {
+        margin-left: 55px;
+      }
+      #bom {
+        width: 900px;
+        margin: 0 auto;
+        margin-top: 5px;
+        font-size: 16px;
+      }
+      #left {
+        float: left;
+        width: 30px;
+        padding-left: 160px;
+        margin-top: 10px;
+      }
+      #right {
+        float: left;
+        margin-top: 10px;
+        margin-left: 8px;
+        color: #808288;
+      }
+      input {
+        width: 100px;
+        height: 35px;
+        border: #dfdfdf solid 1px;
+        border-radius: 4px;
+        margin-left: 5px;
+        outline: none;
+      }
+      #detail {
+        background-color: #2ea1f8;
+        color: #ffffff;
+      }
+      #feedback {
+        background-color: #ffffff;
+        color: #808288;
+      }
+      footer {
+        width: 100%;
+        position: absolute;
+        bottom: 0px;
+        padding: 25px 0 35px 0;
+        margin: 0 auto;
+        text-align: center;
+        color: #808288;
+        font-size: 14px;
+        border-top: 1px solid #e4e7ed;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="max">
+      <div id="top">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          id="图层_1"
+          style=""
+          viewBox="0 0 93 60"
+          x="0px"
+          y="0px"
+          xmlns:xml="http://www.w3.org/XML/1998/namespace"
+          xml:space="preserve"
+          version="1.1"
+        >
+          <style type="text/css">
+            .st0 {
+              fill: #27a1fd;
+            }
+            .st1 {
+              fill: #474755;
+            }
+            .st2 {
+              fill: #ffffff;
+            }
+            .st3 {
+              fill: #71c1fe;
+            }
+          </style>
+          <g>
+            <path
+              class="st0"
+              d="M 73 18 H 31 c -2.2 0 -4 -1.8 -4 -4 V 4 c 0 -2.2 1.8 -4 4 -4 h 42 c 2.2 0 4 1.8 4 4 v 10 C 77 16.2 75.2 18 73 18 Z"
+            />
+            <path
+              class="st1"
+              d="M 21 18 H 4 c -2.2 0 -4 -1.8 -4 -4 V 4 c 0 -2.2 1.8 -4 4 -4 h 17 c 2.2 0 4 1.8 4 4 v 10 C 25 16.2 23.2 18 21 18 Z"
+            />
+            <path
+              class="st0"
+              d="M 73 58 H 31 c -2.2 0 -4 -1.8 -4 -4 V 44 c 0 -2.2 1.8 -4 4 -4 h 42 c 2.2 0 4 1.8 4 4 v 10 C 77 56.2 75.2 58 73 58 Z"
+            />
+            <path
+              class="st1"
+              d="M 21 58 H 4 c -2.2 0 -4 -1.8 -4 -4 V 44 c 0 -2.2 1.8 -4 4 -4 h 17 c 2.2 0 4 1.8 4 4 v 10 C 25 56.2 23.2 58 21 58 Z"
+            />
+            <path
+              class="st0"
+              d="M 46 38 H 4 c -2.2 0 -4 -1.8 -4 -4 V 24 c 0 -2.2 1.8 -4 4 -4 h 42 c 2.2 0 4 1.8 4 4 v 10 C 50 36.2 48.2 38 46 38 Z"
+            />
+            <path
+              class="st1"
+              d="M 73 38 H 56 c -2.2 0 -4 -1.8 -4 -4 V 24 c 0 -2.2 1.8 -4 4 -4 h 17 c 2.2 0 4 1.8 4 4 v 10 C 77 36.2 75.2 38 73 38 Z"
+            />
+            <circle class="st2" cx="73" cy="40" r="20" />
+            <g>
+              <path
+                class="st3"
+                d="M 73 22 c 9.9 0 18 8.1 18 18 s -8.1 18 -18 18 s -18 -8.1 -18 -18 S 63.1 22 73 22 M 73 20 c -11 0 -20 9 -20 20 s 9 20 20 20 s 20 -9 20 -20 S 84 20 73 20 L 73 20 Z"
+              />
+            </g>
+            <path
+              class="st3"
+              d="M 83 42 H 63 c -1.1 0 -2 -0.9 -2 -2 v 0 c 0 -1.1 0.9 -2 2 -2 h 20 c 1.1 0 2 0.9 2 2 v 0 C 85 41.1 84.1 42 83 42 Z"
+            />
+          </g>
+        </svg>
+      </div>
+      <div id="mid">
+        <div id="warm">
+          <span><b>您的请求带有不合法参数，已被网站管理员设置拦截！</b></span>
+        </div>
+        <div id="tip">
+          <p>可能原因：您提交的内容包含危险的攻击请求</p>
+          <p>如何解决：</p>
+          <div id="example">
+            <p>1）检查提交内容；</p>
+            <p>2）如网站托管，请联系空间提供商；</p>
+            <p>3）普通网站访客，请联系网站管理员</p>
+          </div>
+        </div>
+      </div>
+      <div id="bom">
+        <div id="left">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            id="图层_1"
+            style=""
+            viewBox="0 0 30 30"
+            x="0px"
+            y="0px"
+            xmlns:xml="http://www.w3.org/XML/1998/namespace"
+            xml:space="preserve"
+            version="1.1"
+          >
+            <style type="text/css">
+              .st4 {
+                fill: #dfdfdf;
+              }
+              .st5 {
+                fill: #0458b0;
+              }
+              .st6 {
+                fill: #ede7e6;
+              }
+              .st7 {
+                fill: #f7edeb;
+              }
+              .st8 {
+                fill: #3b455f;
+              }
+            </style>
+            <g>
+              <circle class="st4" cx="15" cy="15" r="15" />
+              <ellipse class="st5" cx="15" cy="23.5" rx="12.4" ry="6.5" />
+              <path
+                class="st6"
+                d="M 15 22 L 15 22 c -2.2 0 -4 -1.8 -4 -4 v -3 c 0 -2.2 1.8 -4 4 -4 h 0 c 2.2 0 4 1.8 4 4 v 3 C 19 20.2 17.2 22 15 22 Z"
+              />
+              <ellipse class="st7" cx="15" cy="10.5" rx="5" ry="7.5" />
+              <polygon
+                class="st8"
+                points="11,6 13,8 19,8 20,11 21,11 21,5 18,2 12,2 9,5 9,11 10,11"
+              />
+              <path
+                class="st7"
+                d="M 19.5 13 h -9 C 9.7 13 9 12.3 9 11.5 v 0 c 0 -0.8 0.7 -1.5 1.5 -1.5 h 9 c 0.8 0 1.5 0.7 1.5 1.5 v 0 C 21 12.3 20.3 13 19.5 13 Z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div id="right">
+          <span>如果您是网站管理员，请登录安全狗</span>
+          <a href="http://www.safedog.cn"
+            ><input type="button" name="detail" id="detail" value="查看详情"
+          /></a>
+          <span>或</span>
+          <a href="http://security.safedog.cn/index.html"
+            ><input type="button" name="feedback" id="feedback" value="反馈误报"
+          /></a>
+        </div>
+      </div>
+      <div id="footer">
+        <footer>
+          Copyright&#xa9;2013-2020 厦门服云信息科技有限公司 ALL Rights Reserved |
+          闽ICP备14014139号-1
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

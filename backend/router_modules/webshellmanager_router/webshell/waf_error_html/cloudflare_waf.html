@@ -1,0 +1,199 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en-US">
+  <!--<![endif]-->
+  <head>
+    <title>Access denied | www.example.com used Cloudflare to restrict access</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style type="text/css">
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background-color: #ffffff;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 100%;
+      }
+      h1 {
+        font-size: 1.5em;
+        color: #404040;
+        text-align: center;
+      }
+      p {
+        font-size: 1em;
+        color: #404040;
+        text-align: center;
+        margin: 10px 0 0 0;
+      }
+      #spinner {
+        margin: 0 auto 30px auto;
+        display: block;
+      }
+      .attribution {
+        margin-top: 32px;
+        font-size: 12px;
+        color: #999;
+        text-align: center;
+      }
+      #cf-wrapper {
+        padding-top: 50px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      #cf-error-details {
+        margin: 0 auto;
+        max-width: 800px;
+        padding: 0 20px;
+      }
+      .cf-header {
+        margin-bottom: 40px;
+      }
+      .cf-error-type {
+        color: #bd2426;
+        font-weight: bold;
+        font-size: 28px;
+        display: block;
+        margin-bottom: 10px;
+      }
+      .cf-error-code {
+        color: #404040;
+        font-weight: normal;
+        font-size: 28px;
+      }
+      .cf-highlight {
+        background: #dedede;
+        padding: 2px 5px;
+        border-radius: 2px;
+      }
+      .cf-column {
+        float: left;
+        width: 48%;
+        margin-right: 2%;
+        box-sizing: border-box;
+      }
+      .cf-column.last {
+        margin-right: 0;
+      }
+      .cf-columns:after {
+        content: '';
+        display: table;
+        clear: both;
+      }
+      h2 {
+        font-size: 20px;
+        font-weight: normal;
+        margin-bottom: 20px;
+        color: #333;
+      }
+      .cf-section {
+        margin-bottom: 40px;
+      }
+      .cf-error-footer {
+        font-size: 13px;
+        color: #888;
+        padding-top: 20px;
+        border-top: 1px solid #dedede;
+        text-align: left;
+      }
+      .cf-footer-item {
+        margin-right: 15px;
+        display: inline-block;
+      }
+      .cf-footer-separator {
+        margin: 0 5px;
+        color: #ccc;
+      }
+
+      /* Mobile Responsive */
+      @media screen and (max-width: 720px) {
+        .cf-column {
+          float: none;
+          width: 100%;
+          margin-bottom: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cf-wrapper">
+      <div id="cf-error-details" class="cf-error-details-wrapper">
+        <div class="cf-header cf-error-overview">
+          <h1 style="text-align: left">
+            <span class="cf-error-type">Error 1020</span>
+            <span class="cf-error-code">Access denied</span>
+          </h1>
+        </div>
+
+        <div class="cf-section cf-wrapper">
+          <div class="cf-columns two">
+            <div class="cf-column">
+              <h2>What happened?</h2>
+              <p style="text-align: left">
+                This website is using a security service to protect itself from online attacks.
+              </p>
+            </div>
+            <div class="cf-column last">
+              <h2>What can I do?</h2>
+              <p style="text-align: left">
+                If you are a visitor of this website: <br />Please try again in a few minutes.
+              </p>
+              <p style="text-align: left">
+                If you are the owner of this website: <br />Check your logs for the Ray ID found
+                below.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cf-error-footer cf-wrapper">
+          <p>
+            <span class="cf-footer-item">Cloudflare Ray ID: <strong id="ray-id"></strong></span>
+            <span class="cf-footer-separator">&bull;</span>
+            <span class="cf-footer-item"
+              ><span>Your IP</span>: <span id="client-ip">Loading...</span></span
+            >
+            <span class="cf-footer-separator">&bull;</span>
+            <span class="cf-footer-item"
+              ><span>Performance &amp; security by</span>
+              <a
+                href="https://www.cloudflare.com/5xx-error-landing"
+                target="_blank"
+                style="color: #2f7bbf; text-decoration: none"
+                >Cloudflare</a
+              ></span
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Simple script to generate a fake Ray ID and IP to make it look real
+      document.getElementById('ray-id').innerText = Math.random().toString(16).substr(2, 16)
+
+      // Random IP generator
+      function getRandomIP() {
+        return (
+          Math.floor(Math.random() * 255) +
+          '.' +
+          Math.floor(Math.random() * 255) +
+          '.' +
+          Math.floor(Math.random() * 255) +
+          '.' +
+          Math.floor(Math.random() * 255)
+        )
+      }
+      document.getElementById('client-ip').innerText = getRandomIP()
+    </script>
+  </body>
+</html>

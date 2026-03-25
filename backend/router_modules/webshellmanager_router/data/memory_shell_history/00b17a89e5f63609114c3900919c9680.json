@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1774170311515.941,
+    "webshellUrl": "http://172.26.36.30:8080/webshell/shell.jsp",
+    "path": "/test",
+    "payload": "SERVLET",
+    "className": "IarJ4h",
+    "secretKey": "pass",
+    "paramName": "pass",
+    "cookieName": "X-Request-ID",
+    "cookieValue": "",
+    "componentName": "test_1774170311509",
+    "loadTime": "2026-03-22 17:05:11",
+    "createTime": "2026/3/22 17:05:11"
+  },
+  {
+    "id": 1774168817891.1282,
+    "webshellUrl": "http://172.26.36.30:8080/webshell/shell.jsp",
+    "path": "/test",
+    "payload": "SERVLET",
+    "className": "IarJ4h",
+    "secretKey": "rebeyond",
+    "paramName": "pass",
+    "cookieName": "JSESSIONID",
+    "cookieValue": "",
+    "componentName": "test_1774168817885",
+    "loadTime": "2026-03-22 16:40:17",
+    "createTime": "2026/3/22 16:40:17"
+  }
+]

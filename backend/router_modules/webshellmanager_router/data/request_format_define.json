@@ -1,0 +1,45 @@
+{
+  "headers": {
+    "User-Agent": "${random_ua}",
+    "X-Client-ID": "${uuid}",
+    "X-API-Version": "3.1.6",
+    "X-Request-Time": "${timestamp}",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
+  },
+  "json": {
+    "client_version": "3.1.6",
+    "request_time": "${timestamp}",
+    "client_id": "${uuid}",
+    "data": "${encrypted_data}",
+    "debug_mode": false,
+    "api_version": "v2",
+    "feature_flags": [
+      "new_ui",
+      "enhanced_security"
+    ]
+  },
+  "form": {
+    "pass": "${encrypted_data}",
+    "client_ver": "2.0",
+    "req_id": "${random}",
+    "session_token": "${session_id}",
+    "platform": "web",
+    "csrf_token": "${uuid}"
+  },
+  "xml": {
+    "template": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<api_request>\n    <header>\n        <timestamp>${timestamp}</timestamp>\n        <client_id>${uuid}</client_id>\n        <version>3.0</version>\n    </header>\n    <payload>\n        <encrypted_data><![CDATA[${encrypted_data}]]></encrypted_data>\n        <compression>gzip</compression>\n    </payload>\n</api_request>"
+  },
+  "plain": {
+    "template": "===== SECURE PAYLOAD START =====\nTimestamp: ${timestamp}\nSession: ${session_id}\n\n${encrypted_data}\n\n===== SECURE PAYLOAD END ====="
+  },
+  "response": {
+    "json_template": {
+      "status": "success",
+      "encrypted_data": "${encrypted_data}",
+      "version": "1.0"
+    }
+  }
+}

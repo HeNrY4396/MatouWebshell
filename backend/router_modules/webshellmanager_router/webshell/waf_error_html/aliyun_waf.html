@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="data-spm" content="a3c0e" />
+    <title>
+        405
+    </title>
+    <script src="//g.alicdn.com/code/lib/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        html,
+        body,
+        div,
+        a,
+        h2,
+        p {
+            margin: 0;
+            padding: 0;
+            font-family: 微软雅黑;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3b6ea3;
+        }
+
+        .container {
+            width: 1000px;
+            margin: auto;
+            color: #696969;
+        }
+
+        .header {
+            padding: 50px 0;
+        }
+
+        .header .message {
+            height: 36px;
+            padding-left: 120px;
+            background: url(https://errors.aliyun.com/images/TB1TpamHpXXXXaJXXXXeB7nYVXX-104-162.png) no-repeat 0 -128px;
+            line-height: 36px;
+        }
+
+        .main {
+            padding: 50px 0;
+            background:
+                #f4f5f7;
+        }
+
+        .main img {
+            position: relative;
+            left: 120px;
+        }
+
+        .footer {
+            margin-top:
+                30px;
+            text-align: right;
+        }
+
+        .footer a {
+            padding: 8px 30px;
+            border-radius:
+                10px;
+            border: 1px solid #4babec;
+        }
+
+        .footer a:hover {
+            opacity: .8;
+        }
+
+        .alert-shadow {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height:
+                100%;
+            background: #999;
+            opacity: .5;
+        }
+
+        .alert {
+            display: none;
+            position:
+                absolute;
+            top: 200px;
+            left: 50%;
+            width: 600px;
+            margin-left: -300px;
+            padding-bottom:
+                25px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 2px 1px rgba(0, 0, 0, .1);
+            background: #fff;
+            font-size: 14px;
+            color: #696969;
+        }
+
+        .alert h2 {
+            margin:
+                0 2px;
+            padding: 10px 15px 5px 15px;
+            font-size: 14px;
+            font-weight: normal;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .alert a {
+            display: block;
+            position: absolute;
+            right: 10px;
+            top: 8px;
+            width: 30px;
+            height: 20px;
+            text-align: center;
+        }
+
+        .alert p {
+            padding: 20px 15px;
+        }
+
+        #feedback-container {
+            width: 110px;
+            margin: auto;
+            margin-top: 120px;
+            text-align: center;
+        }
+
+        #qrcode {
+            margin: 0 15px 5px 15px;
+        }
+
+        #feedback a {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body data-spm="7663354">
+    <script>
+        with (document) with (body) with (insertBefore(createElement("script"), firstChild)) setAttribute("exparams", "category=&userid=685308295&aplus&udpid=VWeUOceQJdKj&&yunid=&e93b4e3e75e05&trid=6525b79615839206094003938e&asid=AYf52CjhtWhe+af+HQAAAACWA/SInO3QLw==", id = "tb-beacon-aplus", src = (location > "https" ? "//g" : "//g") + ".alicdn.com/alilog/mlog/aplus_v2.js")
+    </script>
+    <script>
+        //
+        var i18nObject = {
+            "zh-cn": {
+                "message": "很抱歉，由于您访问的URL有可能对网站造成安全威胁，您的访问被阻断。",
+                "bgImg": "https://errors.aliyun.com/images/TB15QGaHpXXXXXOaXXXXia39XXX-660-117.png",
+                "report": "误报反馈",
+            },
+            "en-us": {
+                "message": "Sorry, we have detected malicious traffic from your network, please try again later.",
+                "bgImg": "https://img.alicdn.com/tfs/TB1ADAOIFzqK1RjSZSgXXcpAVXa-1320-234.jpg",
+                "report": "Report",
+            }
+        }
+        var i18n = i18nObject["en-us"];
+        if (navigator.language.indexOf("zh") >= 0) {
+            i18n = i18nObject["zh-cn"];
+        }
+
+    </script>
+
+    <div data-spm="1998410538">
+        <div class="header">
+            <div class="container">
+                <div class="message">
+                    <script>document.write(i18n.message)</script>
+                </div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="container">
+                <script>document.write('<img width="660" height="117" src="' + i18n.bgImg + '"/>')</script>
+
+            </div>
+        </div>
+        <div class="footer">
+            <div class="container">
+                <span style='display:none'>
+                    <script>
+                        function getQueryString(url, name) {
+                            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+                            var r = url.substr(1).match(reg);
+                            if (r !== null) return unescape(r[2]); return null;
+                        }
+                        var __uuid___ = getQueryString(location.href, "uuid")
+                    </script>
+                </span>
+                <a target="_blank" id="report" href="javascript:;" data-spm-click="gostr=/waf.123.123;locaid=d001;">
+                    <script>document.write(i18n.report)</script>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="alertShadow" class="alert-shadow">
+    </div>
+    <div id="alertContainer" class="alert">
+        <h2>
+            提示：
+            <a href="javascript:;" title="关闭" id="closeAlert">
+                X
+            </a>
+        </h2>
+        <p>
+            感谢您的反馈，应用防火墙会尽快进行分析和确认。
+        </p>
+    </div>
+    <div id="feedback-container">
+        <div id="qrcode"></div>
+        <div id="feedback"></div>
+    </div>
+    <script>
+        function show() {
+            var g = function (ele) {
+                return document.getElementById(ele);
+            };
+            var reportHandle = g('report');
+            var alertShadow = g('alertShadow');
+            var alertContainer = g('alertContainer');
+            var closeAlert = g('closeAlert');
+            var own = {};
+            own.report = function () { 
+                own.alert();
+            }; own.alert = function () { alertShadow.style.display = 'block'; alertContainer.style.display = 'block'; }; own.close = function () { alertShadow.style.display = 'none'; alertContainer.style.display = 'none'; };
+        };
+
+        var uuid = location.href.match(/uuid=([^&]+)/);
+        uuid = uuid && encodeURIComponent(uuid[1]);
+        var urlQrCode = location.href.match(/qrcode=([^&]+)/);
+        urlQrCode = urlQrCode && decodeURIComponent(urlQrCode[1]);
+        if (uuid || urlQrCode) {
+            var qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: urlQrCode || uuid,
+                width: 80,
+                height: 80,
+                colorDark: "#999",
+            });
+            var feedbackLink = getFeedbackLink();
+            document.getElementById("feedback").innerHTML = feedbackLink;
+        }
+        function getFeedbackLink() {
+            var urlOrigin;
+            urlOrigin = location.href.match(/origin=([^&]+)/);
+            urlOrigin = urlOrigin && decodeURIComponent(urlOrigin[1]).split("?")[0];
+            if (urlOrigin) {
+                try {
+                    urlOrigin = new URL(urlOrigin);
+                    if (urlOrigin.protocol !== "https:" && urlOrigin.protocol !== "http:") {
+                        urlOrigin = null;
+                    } else {
+                        urlOrigin = urlOrigin.href;
+                    }
+                } catch (e) {
+                    if (typeof urlOrigin !== "string" || urlOrigin.indexOf("http") !== 0) {
+                        urlOrigin = null;
+                    } else {
+                        urlOrigin = filterHtml(urlOrigin);
+                    }
+                }
+            }
+            var _language = navigator.browserLanguage || navigator.language;
+            var text = ["zh-CN", "zh-cn"].includes(_language) ? "点我反馈 >" : "Click to feedback >";
+            return '<a href="' + urlOrigin + '/_____tmd_____/page/feedback?rand=S3WxGHAgAt756EpznwfNzJq2AFA2qBNla3j6EINUS8We9dazM_iKElp8DwVSHZUevpC41Bx7RzivXIj9RnZgdg&uuid=' + encodeURIComponent(uuid) + '&type=6" target="_blank">' + text + '</a>';
+        };
+        function filterHtml(str) {
+            str = str.replace(/&/g, "");
+            str = str.replace(/>/g, "");
+            str = str.replace(/</g, "");
+            str = str.replace(/"/g, "");
+            str = str.replace(/'/g, "");
+            str = str.replace(/`/g, "");
+            str = str.replace(/javascript/g, "");
+            str = str.replace(/iframe/g, "");
+            return str;
+        }
+
+    </script>
+    <script type="text/javascript" charset="utf-8" src="https://errors.aliyun.com/error.js?s=10">
+    </script>
+</body>
+
+</html>
