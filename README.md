@@ -186,12 +186,13 @@ docker run -it --rm -p 5001:5001 -v matou_data:/app/router_modules/webshellmanag
 # 📅 更新日志
 
 ### 2026-03-25
-- 🎉 新增支持 ASP 和 ASPX 类型的 Webshell。
-- 🔧 兼容 `GLIBC_2.31` 版本的 Linux 系统运行环境。
+-  新增支持 ASP 和 ASPX 类型的 Webshell。
+-  兼容 `GLIBC_2.31` 版本的 Linux 系统运行环境。
+-  修复调用后端接口提示"NetWork连接失败"
 
 ### 🔮 后续规划
-- [ ] 🤖 接入 AI Agent，实现智能化的 Webshell Payload 动态生成。
-- [ ] 🛠️ 集成各类主流框架的利用链工具（如 Shiro、Fastjson 等一键利用）。
+- [ ]  接入 AI Agent，实现智能化的 Webshell Payload 动态生成。
+- [ ]  集成各类主流框架的利用链工具（如 Shiro、Fastjson 等一键利用）。
 
 ---
 

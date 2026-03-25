@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:5001/api'
+const API_URL = import.meta.env.DEV ? 'http://localhost:5001/api' : '/api'
 
 // 注意：使用webshell_id极简方案，前端只需传递ID
 
