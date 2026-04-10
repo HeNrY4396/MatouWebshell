@@ -7,7 +7,6 @@ import { RouterLink, RouterView } from 'vue-router'
     <header>
       <div class="nav-container">
         <img alt="Vue logo" class="logo" src="@/assets/1.ico" width="50" height="50" />
-        <h2>欧耶！我见过马</h2>
         <nav>
           <RouterLink to="/">首页</RouterLink>
           <RouterLink to="/webshellManager">Webshell管理</RouterLink>
