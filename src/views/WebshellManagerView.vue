@@ -78,6 +78,13 @@
             :visible="activeTab === 'databaseManager'"
           />
         </el-tab-pane>
+
+        <el-tab-pane label="自定义Payload" name="customPayload">
+          <WebshellCustomPayload
+            :current-webshell="currentWebshell"
+            :visible="activeTab === 'customPayload'"
+          />
+        </el-tab-pane>
       </el-tabs>
     </el-dialog>
 
@@ -248,6 +255,7 @@ import WebshellFileManager from '@/components/WebshellManagement/WebshellFileMan
 import WebshellMemoryShell from '@/components/WebshellManagement/WebshellMemoryShell.vue'
 import WebshellNatTraversal from '@/components/WebshellManagement/WebshellNatTraversal.vue'
 import WebshellDatabaseManager from '@/components/WebshellManagement/WebshellDatabaseManager.vue'
+import WebshellCustomPayload from '@/components/WebshellManagement/WebshellCustomPayload.vue'
 import WebshellConfig from '@/components/WebshellManagement/WebshellConfig.vue'
 import WebshellGenerator from '@/components/WebshellManagement/WebshellGenerator.vue'
 

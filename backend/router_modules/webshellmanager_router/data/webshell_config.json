@@ -22,5 +22,12 @@
   "jspFunction": {
     "classnameObfuscation": "random",
     "specifiedClassname": "MyPayload"
+  },
+  "llm": {
+    "provider": "openai",
+    "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+    "model": "glm-4.7",
+    "apiKey": "",
+    "temperature": 0.1
   }
 }

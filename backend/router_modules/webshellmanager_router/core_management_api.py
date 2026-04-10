@@ -37,6 +37,19 @@ from .shell_factory import (
 )
 from . import config as global_config
 
+from .agent import (
+    JspDisguiseAgent,
+    JspxDisguiseAgent,
+    PhpDisguiseAgent,
+    PayloadAgentConfig,
+)
+
+AI_AGENT_MAP = {
+    'jsp': (JspDisguiseAgent, 'jsp_filename'),
+    'jspx': (JspxDisguiseAgent, 'jspx_filename'),
+    'php': (PhpDisguiseAgent, 'php_filename'),
+}
+
 # 禁用不安全请求的警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -98,6 +111,17 @@ NORMAL_TEMPLATE_EXTENSIONS = {
     'asp': ('.asp',),
     'csharp': ('.aspx',)
 }
+
+# AI 生成正常业务模板后的保存目录
+# jsp/jspx 保存至原始 webshell 目录，php 保存至 normal_template 子目录
+AI_TEMPLATE_SAVE_DIRS = {
+    'jsp': TEMPLATE_DIRS['jsp'],
+    'jspx': TEMPLATE_DIRS['jspx'],
+    'php': NORMAL_TEMPLATE_PHP_PATH,
+}
+
+
+
 
 def list_template_files(webshell_type):
     """列出指定类型的模板文件"""
@@ -186,6 +210,111 @@ def get_normal_templates():
             'status': 'error',
             'message': f'获取模拟模板列表失败: {str(e)}'
         }), 500
+
+@core_management_bp.route('/ai_generate_template', methods=['POST'])
+def ai_generate_template():
+    """使用 AI 生成正常业务伪装模板（支持 jsp / jspx / php）"""
+    try:
+        data = request.json or {}
+        webshell_type = (data.get('webshell_type') or '').strip().lower()
+        requirement = (data.get('requirement') or '').strip()
+
+        if webshell_type not in AI_AGENT_MAP:
+            return jsonify({'status': 'error', 'message': '仅支持 jsp / jspx / php 类型的 AI 模板生成'}), 400
+        if not requirement:
+            return jsonify({'status': 'error', 'message': '需求描述不能为空'}), 400
+
+        llm_cfg = global_config.load_global_config().get('llm', {})
+        provider = (llm_cfg.get('provider') or 'openai').strip()
+        base_url = (llm_cfg.get('baseUrl') or '').strip()
+        model_name = (llm_cfg.get('model') or '').strip()
+        api_key = (llm_cfg.get('apiKey') or '').strip()
+        temperature = float(llm_cfg.get('temperature', 0.1) or 0.1)
+        max_compile_attempts = 3
+
+        if not api_key:
+            return jsonify({'status': 'error', 'message': 'LLM API Key 未配置，请先在 WebshellConfig 中保存 LLM 配置'}), 400
+        if not model_name:
+            return jsonify({'status': 'error', 'message': 'LLM 模型名称未配置，请先在 WebshellConfig 中保存 LLM 配置'}), 400
+        if provider not in ['openai', 'codex_proxy', 'gemini_proxy']:
+            return jsonify({'status': 'error', 'message': f'不支持的 LLM provider: {provider}'}), 400
+        if provider in ('codex_proxy', 'gemini_proxy') and not base_url:
+            return jsonify({'status': 'error', 'message': f'使用 {provider} 时必须配置 Base URL'}), 400
+
+        agent_cls, filename_key = AI_AGENT_MAP[webshell_type]
+        agent = agent_cls(
+            PayloadAgentConfig(
+                api_key=api_key,
+                model_name=model_name,
+                base_url=base_url or None,
+                provider=provider,
+                temperature=temperature,
+                max_compile_attempts=max_compile_attempts,
+            )
+        )
+        result = agent.run(requirement)
+
+        generated_code = result.get('generated_code', '') or ''
+        if not generated_code.strip():
+            return jsonify({
+                'status': 'error',
+                'message': result.get('compile_message') or 'AI 未返回可用的模板代码',
+            }), 400
+
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'code': generated_code,
+                'filename': result.get(filename_key, f'BusinessFacade.{webshell_type}'),
+                'compile_success': result.get('compile_success', False),
+                'compile_message': result.get('compile_message', ''),
+            }
+        })
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'AI 模板生成失败: {str(e)}'}), 500
+
+
+@core_management_bp.route('/save_ai_template', methods=['POST'])
+def save_ai_template():
+    """将 AI 生成的正常业务模板保存至对应的 webshell 目录"""
+    try:
+        data = request.json or {}
+        webshell_type = (data.get('webshell_type') or '').strip().lower()
+        filename = (data.get('filename') or '').strip()
+        code = data.get('code') or ''
+
+        if webshell_type not in AI_TEMPLATE_SAVE_DIRS:
+            return jsonify({'status': 'error', 'message': '仅支持 jsp / jspx / php 类型的模板保存'}), 400
+        if not filename:
+            return jsonify({'status': 'error', 'message': '文件名不能为空'}), 400
+        if not code.strip():
+            return jsonify({'status': 'error', 'message': '模板代码不能为空'}), 400
+
+        # 防止路径穿越
+        safe_name = os.path.basename(filename)
+        expected_ext = f'.{webshell_type}'
+        if not safe_name.lower().endswith(expected_ext):
+            safe_name = safe_name + expected_ext
+
+        save_dir = AI_TEMPLATE_SAVE_DIRS[webshell_type]
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, safe_name)
+
+        with open(save_path, 'w', encoding='utf-8') as f:
+            f.write(code)
+
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'filename': safe_name,
+                'saved_path': save_path,
+            }
+        })
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'保存模板失败: {str(e)}'}), 500
+
 
 # ====== 工具函数 ======
 

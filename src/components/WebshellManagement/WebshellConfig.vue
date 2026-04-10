@@ -256,6 +256,72 @@
       </el-tab-pane>
 
       <!-- 通用设置 -->
+      <el-tab-pane label="LLM配置" name="llm">
+        <div class="config-section">
+          <div class="section-header">
+            <h4>AI 生成配置</h4>
+            <p class="section-description">配置 Java Payload AI 生成功能所使用的 LLM 参数</p>
+          </div>
+
+          <el-form :model="llmConfig" label-width="180px" class="config-form">
+            <el-form-item label="Provider">
+              <el-radio-group v-model="llmConfig.provider">
+                <el-radio label="openai">OpenAI Compatible</el-radio>
+                <el-radio label="codex_proxy">Codex Proxy</el-radio>
+                <el-radio label="gemini_proxy">Gemini Proxy</el-radio>
+              </el-radio-group>
+              <div class="field-help">选择后端 AI 生成接口使用的模型接入方式</div>
+            </el-form-item>
+
+            <el-form-item label="Base URL">
+              <el-input
+                v-model="llmConfig.baseUrl"
+                placeholder="如：https://api.openai.com/v1 或你的中转地址"
+              />
+              <div class="field-help">填写兼容 OpenAI Chat Completions 的接口地址</div>
+            </el-form-item>
+
+            <el-form-item label="模型名称">
+              <el-input
+                v-model="llmConfig.model"
+                placeholder="如：gpt-4.1、gpt-5、gpt-5.2-codex"
+              />
+              <div class="field-help">后端生成 Java Payload 时会使用这里配置的模型</div>
+            </el-form-item>
+
+            <el-form-item label="API Key">
+              <el-input
+                v-model="llmConfig.apiKey"
+                type="password"
+                show-password
+                placeholder="请输入 LLM API Key"
+              />
+              <div class="field-help">仅保存在本地全局配置中，不会在前端直接调用模型</div>
+            </el-form-item>
+
+            <el-form-item label="Temperature">
+              <div class="form-item-content">
+                <el-input-number
+                  v-model="llmConfig.temperature"
+                  :min="0"
+                  :max="2"
+                  :step="0.1"
+                  :precision="1"
+                  controls-position="right"
+                  style="width: 180px"
+                />
+                <div class="field-help">建议 0.1 到 0.4，偏低可提升 Payload 生成稳定性</div>
+              </div>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button type="primary" @click="saveLlmConfig">保存配置</el-button>
+              <el-button @click="resetLlmConfig">重置为默认值</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-tab-pane>
+
       <el-tab-pane label="通用设置" name="general">
         <div class="config-section">
           <div class="section-header">
@@ -364,6 +430,13 @@ const DEFAULT_CONFIG = {
     classnameObfuscation: 'random',
     specifiedClassname: '',
   },
+  llm: {
+    provider: 'openai',
+    baseUrl: '',
+    model: '',
+    apiKey: '',
+    temperature: 0.1,
+  },
 }
 
 // 状态
@@ -371,6 +444,7 @@ const uploadConfig = ref({ ...DEFAULT_CONFIG.upload })
 const downloadConfig = ref({ ...DEFAULT_CONFIG.download })
 const generalConfig = ref({ ...DEFAULT_CONFIG.general })
 const jspFunctionConfig = ref({ ...DEFAULT_CONFIG.jspFunction })
+const llmConfig = ref({ ...DEFAULT_CONFIG.llm })
 const loading = ref(false)
 
 // 文件输入框引用
@@ -419,6 +493,26 @@ const normalizeConfig = (cfg) => {
   }
   merged.jspFunction.specifiedClassname = (merged.jspFunction.specifiedClassname || '').trim()
 
+  merged.llm.provider = (merged.llm.provider || 'openai').trim()
+  if (!['openai', 'codex_proxy', 'gemini_proxy'].includes(merged.llm.provider)) {
+    merged.llm.provider = 'openai'
+  }
+  merged.llm.baseUrl = (merged.llm.baseUrl || '').trim()
+  merged.llm.model = (merged.llm.model || '').trim()
+  merged.llm.apiKey = (merged.llm.apiKey || '').trim()
+  merged.llm.temperature = Number(merged.llm.temperature ?? 0.1)
+  if (Number.isNaN(merged.llm.temperature)) {
+    merged.llm.temperature = 0.1
+  }
+  merged.llm.temperature = Math.min(2, Math.max(0, merged.llm.temperature))
+  merged.llm = {
+    provider: merged.llm.provider,
+    baseUrl: merged.llm.baseUrl,
+    model: merged.llm.model,
+    apiKey: merged.llm.apiKey,
+    temperature: merged.llm.temperature,
+  }
+
   return merged
 }
 
@@ -438,6 +532,7 @@ const loadAllConfigs = async () => {
       downloadConfig.value = cfg.download
       generalConfig.value = cfg.general
       jspFunctionConfig.value = cfg.jspFunction
+      llmConfig.value = cfg.llm
     } else {
       resetAllToDefault()
     }
@@ -456,6 +551,7 @@ const saveAllConfigs = async () => {
       download: downloadConfig.value,
       general: generalConfig.value,
       jspFunction: jspFunctionConfig.value,
+      llm: llmConfig.value,
     })
     const resp = await api.coreManagement.saveGlobalConfig(payload)
     if (resp.data?.status === 'success') {
@@ -474,6 +570,7 @@ const saveUploadConfig = () => saveAllConfigs()
 const saveDownloadConfig = () => saveAllConfigs()
 const saveGeneralConfig = () => saveAllConfigs()
 const saveJspFunctionConfig = () => saveAllConfigs()
+const saveLlmConfig = () => saveAllConfigs()
 
 // 重置上传配置
 const resetUploadConfig = () => {
@@ -498,11 +595,17 @@ const resetJspFunctionConfig = () => {
   ElMessage.info('JSP配置已重置为默认值')
 }
 
+const resetLlmConfig = () => {
+  llmConfig.value = { ...DEFAULT_CONFIG.llm }
+  ElMessage.info('LLM配置已重置为默认值')
+}
+
 const resetAllToDefault = () => {
   resetUploadConfig()
   resetDownloadConfig()
   resetGeneralConfig()
   resetJspFunctionConfig()
+  resetLlmConfig()
 }
 
 // 导出配置
@@ -513,6 +616,7 @@ const exportConfig = () => {
       download: downloadConfig.value,
       general: generalConfig.value,
       jspFunction: jspFunctionConfig.value,
+      llm: llmConfig.value,
       exportTime: new Date().toISOString(),
     }
 
@@ -551,7 +655,7 @@ const handleImportFile = (event) => {
     try {
       const config = JSON.parse(e.target.result)
 
-      if (!config.upload && !config.download && !config.general) {
+      if (!config.upload && !config.download && !config.general && !config.llm) {
         ElMessage.error('无效的配置文件格式')
         return
       }
@@ -561,11 +665,13 @@ const handleImportFile = (event) => {
         download: config.download,
         general: config.general,
         jspFunction: config.jspFunction,
+        llm: config.llm,
       })
       uploadConfig.value = merged.upload
       downloadConfig.value = merged.download
       generalConfig.value = merged.general
       jspFunctionConfig.value = merged.jspFunction
+      llmConfig.value = merged.llm
       ElMessage.success('配置导入成功，已加载到面板')
     } catch (error) {
       console.error('[CONFIG] 导入配置失败:', error)
@@ -604,6 +710,7 @@ const getUploadConfig = () => ({ ...uploadConfig.value })
 const getDownloadConfig = () => ({ ...downloadConfig.value })
 const getGeneralConfig = () => ({ ...generalConfig.value })
 const getJspFunctionConfig = () => ({ ...jspFunctionConfig.value })
+const getLlmConfig = () => ({ ...llmConfig.value })
 
 // 暴露方法给父组件
 defineExpose({
@@ -611,6 +718,7 @@ defineExpose({
   getDownloadConfig,
   getGeneralConfig,
   getJspFunctionConfig,
+  getLlmConfig,
 })
 
 console.log('WebshellConfig 组件已加载')

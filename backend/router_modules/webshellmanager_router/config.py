@@ -39,6 +39,13 @@ DEFAULT_GLOBAL_CONFIG = {
         "classnameObfuscation": "random",  # random|dictionary|specified|none
         "specifiedClassname": "",
     },
+    "llm": {
+        "provider": "openai",
+        "baseUrl": "",
+        "model": "",
+        "apiKey": "",
+        "temperature": 0.1,
+    },
 }
 
 # 全局缓存的配置字典
@@ -68,6 +75,15 @@ GENERAL_ENABLE_DEBUG_LOG = DEFAULT_GLOBAL_CONFIG["general"]["enableDebugLog"]
 JSP_CLASSNAME_OBFUSCATION = DEFAULT_GLOBAL_CONFIG["jspFunction"]["classnameObfuscation"]
 JSP_SPECIFIED_CLASSNAME = DEFAULT_GLOBAL_CONFIG["jspFunction"]["specifiedClassname"]
 
+# LLM配置
+LLM_TEMPERATURE = DEFAULT_GLOBAL_CONFIG["llm"]["temperature"]
+LLM_MAX_COMPILE_ATTEMPTS = 3
+LLM_BASE_URL = DEFAULT_GLOBAL_CONFIG["llm"]["baseUrl"]
+LLM_MODEL = DEFAULT_GLOBAL_CONFIG["llm"]["model"]
+LLM_API_KEY = DEFAULT_GLOBAL_CONFIG["llm"]["apiKey"]
+LLM_PROVIDER = DEFAULT_GLOBAL_CONFIG["llm"]["provider"]
+
+
 
 def _merge_dict(defaults: dict, incoming: dict) -> dict:
     """浅层递归合并字典，incoming优先"""
@@ -95,9 +111,11 @@ def load_global_config() -> dict:
 def save_global_config(config: dict) -> bool:
     """保存全局配置"""
     try:
+        normalized_config = normalize_global_config(config)
         os.makedirs(DATA_DIR, exist_ok=True)
         with open(GLOBAL_CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(config, f, ensure_ascii=False, indent=2)
+            json.dump(normalized_config, f, ensure_ascii=False, indent=2)
+        _assign_globals(normalized_config)
         return True
     except Exception as e:
         print(f"[ERROR] 保存全局配置失败: {e}")
@@ -151,6 +169,21 @@ def normalize_global_config(data: dict) -> dict:
     jsp_fn["specifiedClassname"] = (jsp_fn.get("specifiedClassname") or "").strip()
     merged["jspFunction"] = jsp_fn
 
+    llm = merged.get("llm", {})
+    llm["provider"] = (llm.get("provider") or "openai").strip()
+    if llm["provider"] not in ["openai", "codex_proxy", "gemini_proxy"]:
+        llm["provider"] = "openai"
+    llm["baseUrl"] = (llm.get("baseUrl") or "").strip()
+    llm["model"] = (llm.get("model") or "").strip()
+    llm["apiKey"] = (llm.get("apiKey") or "").strip()
+    llm["temperature"] = _float(llm.get("temperature", 0.1), 0.1)
+    if llm["temperature"] < 0:
+        llm["temperature"] = 0.0
+    if llm["temperature"] > 2:
+        llm["temperature"] = 2.0
+    llm.pop("maxCompileAttempts", None)
+    merged["llm"] = llm
+
     return merged
 
 
@@ -194,6 +227,14 @@ def _assign_globals(cfg: dict):
     globals()["JSP_SPECIFIED_CLASSNAME"] = jsp_fn.get(
         "specifiedClassname", JSP_SPECIFIED_CLASSNAME
     )
+
+    llm = cfg.get("llm", {})
+    globals()["LLM_PROVIDER"] = llm.get("provider", LLM_PROVIDER)
+    globals()["LLM_BASE_URL"] = llm.get("baseUrl", LLM_BASE_URL)
+    globals()["LLM_MODEL"] = llm.get("model", LLM_MODEL)
+    globals()["LLM_API_KEY"] = llm.get("apiKey", LLM_API_KEY)
+    globals()["LLM_TEMPERATURE"] = llm.get("temperature", LLM_TEMPERATURE)
+    globals()["LLM_MAX_COMPILE_ATTEMPTS"] = 3
 
 
 def reload_global_config():

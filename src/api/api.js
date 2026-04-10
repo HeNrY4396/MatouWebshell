@@ -135,6 +135,26 @@ export const coreManagementApi = {
   },
 
   /**
+   * AI 生成正常业务伪装模板（支持 jsp / jspx / php）
+   * @param {Object} data - { webshell_type, requirement }
+   * @returns {Promise} 返回生成的代码和建议文件名
+   */
+  aiGenerateTemplate(data) {
+    return apiClient.post('/webshell/ai_generate_template', data, {
+      timeout: 180000,
+    })
+  },
+
+  /**
+   * 保存 AI 生成的模板至对应 webshell 目录
+   * @param {Object} data - { webshell_type, filename, code }
+   * @returns {Promise} 返回保存结果
+   */
+  saveAiTemplate(data) {
+    return apiClient.post('/webshell/save_ai_template', data)
+  },
+
+  /**
    * 下载生成的webshell文件
    * @param {string} filename - 文件名
    * @returns {Promise} 返回文件下载
@@ -211,6 +231,63 @@ export const javaShellApi = {
    */
   executeCommand(data) {
     return apiClient.post('/webshell/java/executeCommand', data)
+  },
+
+  /**
+   * 执行自定义Payload
+   * @param {Object} data - 包含webshell_id、payloadCode或pluginName、methodName和param的对象
+   * @returns {Promise} 返回Payload执行结果
+   */
+  executePayload(data) {
+    return apiClient.post('/webshell/java/executePayload', data, {
+      timeout: 40000,
+    })
+  },
+
+  /**
+   * 保存自定义Payload插件
+   * @param {Object} data - 包含payloadCode的对象
+   * @returns {Promise} 返回保存结果
+   */
+  saveCustomPayload(data) {
+    return apiClient.post('/webshell/java/saveCustomPayload', data)
+  },
+
+  /**
+   * 获取自定义Payload插件列表
+   * @returns {Promise} 返回插件列表
+   */
+  listCustomPayloads() {
+    return apiClient.get('/webshell/java/listCustomPayloads')
+  },
+
+  /**
+   * 获取自定义Payload插件详情
+   * @param {Object} data - 包含pluginName的对象
+   * @returns {Promise} 返回插件详情
+   */
+  getCustomPayloadDetail(data) {
+    return apiClient.post('/webshell/java/getCustomPayloadDetail', data)
+  },
+
+  /**
+   * 删除自定义Payload插件
+   * @param {Object} data - 包含pluginName的对象
+   * @returns {Promise} 返回删除结果
+   */
+  deleteCustomPayload(data) {
+    return apiClient.post('/webshell/java/deleteCustomPayload', data)
+  },
+
+  /**
+   * AI 生成自定义 Java Payload
+   * @param {Object} data - 包含 requirement 的对象
+   * @returns {Promise} 返回生成结果
+   */
+  generatePayload(data) {
+    return apiClient.post('/webshell/java/generatePayload', data, {
+      timeout: 120000,
+    })
   },
 
   // ====== 文件浏览和管理 ======

@@ -2,7 +2,7 @@
 
 MatouWebshell 是一款基于 Vue 3 和 Python 开发的高隐蔽性开源 Webshell 管理与利用平台。项目基于哥斯拉（Godzilla）的设计思路进行二次开发，重点移除了通信流量的强特征，支持用户自定义请求格式与响应加密类型，能够完美伪装成正常业务流量以规避检测。
 
-**💡 二次开发友好**：作为一款完全开源的工具，MatouWebshell 拥有良好的架构和极高的扩展性。非常支持且鼓励安全研究人员基于此项目进行二次开发。你可以根据实战需求，轻松地修改或新增各类语言的 Payload、自定义变量池与代码混淆规则，甚至编写属于你自己的自动化利用模块。
+**💡 二次开发友好**：作为一款完全开源的工具，MatouWebshell 拥有良好的架构和极高的扩展性。你可以根据实战需求，轻松地修改或新增各类语言的 Payload、自定义变量池与代码混淆规则，甚至编写属于你自己的自动化利用模块。
 
 - **🚀 多语言支持**：内置生成与连接 PHP、JSP/JSPX、ASP、C# 类型的 Webshell。
 - **🛡️ 极致隐蔽**：支持自定义通信流量格式（如伪装成图片请求等）、响应加密类型、变量池替换以及代码关键字混淆（如 JSPX 的 CDATA+Unicode 编码混淆）。
@@ -74,6 +74,7 @@ docker run -it --rm -p 5001:5001 -v matou_data:/app/router_modules/webshellmanag
 ### 1. Webshell 生成
 
 **基础配置**
+
 - **参数名**：初始化阶段，客户端需将加密的 payload 以表单格式发送至服务端。如 POST 请求：`{参数名}={encryptedPayload}`
 - **Webshell 类型**：支持 PHP、JSP/JSPX、ASP 和 C#。
 - **CookieName**：相当于 Webshell 的密钥，用于激活 Webshell 的功能开关。
@@ -94,6 +95,22 @@ docker run -it --rm -p 5001:5001 -v matou_data:/app/router_modules/webshellmanag
 ```jsp
  if (session.g<![CDATA[\u0065]]><![CDATA[\u0074\u0041\u0074t\u0072i\u0062]]><![CDATA[\u0075t\u0065]]>("$payload$") == null
 ```
+
+
+
+**AI生成业务模板**
+
+输入你想生成什么类型的模板需求，然后点击"AI生成", 生成代码可能需要一些时间(取决于你设置的AI模型生成内容的速度)
+
+![image-20260409151210397](README/image-20260409151210397.png)
+
+
+
+生成的模板代码和模板文件名会显示在下方，可点击 “保存至模板目录”将代码文件保存在至后端目录，然后再“基础配置”区域勾选你刚刚生成的模板文件
+
+![image-20260409151546918](README/image-20260409151546918.png)		
+
+
 
 ### 2. Webshell 连接
 
@@ -161,6 +178,8 @@ docker run -it --rm -p 5001:5001 -v matou_data:/app/router_modules/webshellmanag
 
 ![image-20251022193417722](README/image-20251022193417722.png)
 
+
+
 ---
 
 ## 💉 内存马注入 (JSP)
@@ -181,6 +200,40 @@ docker run -it --rm -p 5001:5001 -v matou_data:/app/router_modules/webshellmanag
 选择内存马类型，填写路径及 Wrapper/Filter 名称即可实现无痕卸载。
 ![image-20251022210706163](README/image-20251022210706163.png)	
 
+
+
+## 🔗Payload插件管理
+
+在左侧"插件列表"区域可新建插件和查看插件代码，右侧"插件编辑与执行"区域可对插件的代码进行编辑和执行
+
+例如要执行一个对端口存活探测的插件, 对应的方法名是`portAlive`, 方法参数为`{ "ip": "192.168.47.123","port": 3389}`,点击执行代码后下方会显示执行结果
+
+![image-20260409204314206](README/image-20260409204314206.png)	
+
+![image-20260409204105945](README/image-20260409204105945.png)
+
+
+
+支持调用AI来生成插件代码, 用户只需输入想实现的功能需求, 例如要实现对文件内容读取, 需求一般要包含方法名, 参数名以及你希望的返回内容形式
+
+![image-20260409204507643](README/image-20260409204507643.png)
+
+
+
+AI生成代码后会自动复制到编辑框处，点击保存插件可将插件代码保存至后端目录(`java/payload/custom`)
+
+![image-20260409205012963](README/image-20260409205012963.png)		
+
+​	
+
+## 🧠AIAgent配置
+
+在全局配置LLM配置区域可设置LLM参数，如果你的AI API是通过中转站调用的，可选择Codex Proxy或Gemini Proxy
+
+![image-20260409205657530](README/image-20260409205657530.png)	
+
+​	
+
 ---
 
 # 📅 更新日志
@@ -190,9 +243,18 @@ docker run -it --rm -p 5001:5001 -v matou_data:/app/router_modules/webshellmanag
 -  兼容 `GLIBC_2.31` 版本的 Linux 系统运行环境。
 -  修复调用后端接口提示"NetWork连接失败"
 
+### 2026-04-08
+
+- 支持自定义JavaPayload插件
+
+- 接入AiAgent功能，可在全局配置定义LLM参数，可使用AI生成伪装正常业务Webshell和JavaPayload插件
+
+
+
 ### 🔮 后续规划
-- [ ]  接入 AI Agent，实现智能化的 Webshell Payload 动态生成。
+- [x]  接入 AI Agent，实现智能化的 Webshell Payload 动态生成。
 - [ ]  集成各类主流框架的利用链工具（如 Shiro、Fastjson 等一键利用）。
+- [ ]  还没想好
 
 ---
 

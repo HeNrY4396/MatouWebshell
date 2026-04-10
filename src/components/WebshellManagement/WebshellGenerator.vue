@@ -3,7 +3,7 @@
     :model-value="visible"
     @update:model-value="updateVisible"
     title="生成 Webshell"
-    width="580px"
+    width="1000px"
     :close-on-click-modal="false"
     class="generate-webshell-dialog"
     @open="handleOpen"
@@ -322,6 +322,83 @@
           </div>
         </div>
       </div>
+
+      <!-- AI 生成正常业务模板（仅 jsp / jspx / php） -->
+      <transition name="expand">
+        <div v-if="isAiTemplateSupported" class="form-section ai-section">
+          <div class="section-title">
+            <span>AI 生成正常业务模板</span>
+            <el-tooltip
+              content="AI 根据需求生成伪装成正常业务的 webshell 文件，可保存至模板目录后直接使用"
+              placement="top"
+            >
+              <el-icon class="title-icon"><QuestionFilled /></el-icon>
+            </el-tooltip>
+          </div>
+
+          <el-form-item label="需求描述" label-width="80px">
+            <el-input
+              v-model="aiRequirement"
+              type="textarea"
+              :rows="3"
+              placeholder="例如：生成一个伪装成数据库健康检查业务的 webshell"
+              clearable
+            />
+          </el-form-item>
+
+          <el-form-item label-width="80px" label=" ">
+            <el-button
+              type="primary"
+              :loading="aiGenerating"
+              :disabled="!aiRequirement.trim()"
+              @click="handleAiGenerate"
+            >
+              <el-icon class="el-icon--left"><MagicStick /></el-icon>
+              {{ aiGenerating ? 'AI 生成中…' : 'AI 生成' }}
+            </el-button>
+            <span v-if="aiCode" class="ai-status-text">
+              <el-icon style="color: #67c23a"><CircleCheck /></el-icon>
+              已生成，可保存
+            </span>
+          </el-form-item>
+
+          <transition name="expand">
+            <div v-if="aiCode">
+              <el-form-item label="模板文件名" label-width="100px">
+                <el-input v-model="aiFilename" placeholder="文件名" clearable style="max-width: 280px" />
+              </el-form-item>
+
+              <el-form-item label="模板代码" label-width="100px">
+                <div class="ai-code-wrap">
+                  <el-input
+                    v-model="aiCode"
+                    type="textarea"
+                    :rows="10"
+                    class="ai-code-textarea"
+                    resize="vertical"
+                  />
+                </div>
+              </el-form-item>
+
+              <el-form-item label-width="80px" label=" ">
+                <el-button
+                  type="success"
+                  :loading="aiSaving"
+                  :disabled="!aiFilename.trim() || !aiCode.trim()"
+                  @click="handleSaveAiTemplate"
+                >
+                  <el-icon class="el-icon--left"><FolderAdd /></el-icon>
+                  {{ aiSaving ? '保存中…' : '保存至模板目录' }}
+                </el-button>
+                <span class="ai-save-tip">
+                  <el-icon class="tip-icon"><InfoFilled /></el-icon>
+                  {{ aiSaveTipText }}
+                </span>
+              </el-form-item>
+            </div>
+          </transition>
+        </div>
+      </transition>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
@@ -337,7 +414,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { InfoFilled, QuestionFilled, Download } from '@element-plus/icons-vue'
+import { InfoFilled, QuestionFilled, Download, MagicStick, CircleCheck, FolderAdd } from '@element-plus/icons-vue'
 import api from '@/api/api'
 
 const props = defineProps({
@@ -382,6 +459,14 @@ const generateForm = ref({
   },
 })
 const generatingWebshell = ref(false)
+
+// AI 生成正常业务模板相关状态
+const aiRequirement = ref('')
+const aiGenerating = ref(false)
+const aiCode = ref('')
+const aiFilename = ref('')
+const aiSaving = ref(false)
+
 const templateOptions = ref([])
 const templateLoading = ref(false)
 const normalTemplateOptions = ref([])
@@ -426,6 +511,18 @@ const needsHtmlRatio = computed(() => {
   if (!isJspxType.value) return false
   const method = generateForm.value.obfuscation.method
   return ['html', 'html_unicode', 'cdata_html'].includes(method)
+})
+
+const isAiTemplateSupported = computed(() =>
+  ['php', 'jsp', 'jspx'].includes(generateForm.value.webshellType),
+)
+
+const aiSaveTipText = computed(() => {
+  const type = generateForm.value.webshellType
+  if (type === 'php') return '将保存至 webshell/php/normal_template 目录'
+  if (type === 'jsp') return '将保存至 webshell/jsp 目录'
+  if (type === 'jspx') return '将保存至 webshell/jspx 目录'
+  return ''
 })
 
 const fetchTemplateOptions = async (type) => {
@@ -507,6 +604,10 @@ watch(
     generateForm.value.normalTemplate.enabled = false
     generateForm.value.normalTemplate.template = ''
     generateForm.value.className = ''
+    // 切换类型时重置 AI 状态
+    aiRequirement.value = ''
+    aiCode.value = ''
+    aiFilename.value = ''
     // CookieName 默认值（仍要求非空）
     if (type === 'php') {
       if (!generateForm.value.cookieName) generateForm.value.cookieName = 'PHPSESSID'
@@ -573,6 +674,9 @@ const handleOpen = () => {
   }
   templateOptions.value = []
   normalTemplateOptions.value = []
+  aiRequirement.value = ''
+  aiCode.value = ''
+  aiFilename.value = ''
   fetchTemplateOptions(generateForm.value.webshellType)
   fetchNormalTemplateOptions(generateForm.value.webshellType)
 }
@@ -756,6 +860,74 @@ const handleGenerateWebshell = async () => {
     generatingWebshell.value = false
   }
 }
+
+// AI 生成正常业务模板
+const handleAiGenerate = async () => {
+  const requirement = aiRequirement.value.trim()
+  if (!requirement) {
+    ElMessage.warning('请输入需求描述')
+    return
+  }
+  aiGenerating.value = true
+  aiCode.value = ''
+  aiFilename.value = ''
+  try {
+    const response = await api.coreManagement.aiGenerateTemplate({
+      webshell_type: generateForm.value.webshellType,
+      requirement,
+    })
+    if (response.data.status === 'success') {
+      aiCode.value = response.data.data.code || ''
+      aiFilename.value = response.data.data.filename || ''
+      ElMessage.success('AI 模板生成成功')
+    } else {
+      ElMessage.error(response.data.message || 'AI 模板生成失败')
+    }
+  } catch (error) {
+    console.error('AI 模板生成失败:', error)
+    ElMessage.error('AI 模板生成失败: ' + (error.response?.data?.message || error.message))
+  } finally {
+    aiGenerating.value = false
+  }
+}
+
+const handleSaveAiTemplate = async () => {
+  const filename = aiFilename.value.trim()
+  const code = aiCode.value.trim()
+  if (!filename) {
+    ElMessage.warning('请输入文件名')
+    return
+  }
+  if (!code) {
+    ElMessage.warning('代码内容不能为空')
+    return
+  }
+  aiSaving.value = true
+  try {
+    const response = await api.coreManagement.saveAiTemplate({
+      webshell_type: generateForm.value.webshellType,
+      filename,
+      code,
+    })
+    if (response.data.status === 'success') {
+      const savedFilename = response.data.data.filename
+      ElMessage.success(`已保存：${savedFilename}`)
+      // 刷新模板列表，使刚保存的文件可直接选择
+      if (generateForm.value.webshellType === 'php') {
+        await fetchNormalTemplateOptions('php')
+      } else {
+        await fetchTemplateOptions(generateForm.value.webshellType)
+      }
+    } else {
+      ElMessage.error(response.data.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存 AI 模板失败:', error)
+    ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message))
+  } finally {
+    aiSaving.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -906,5 +1078,52 @@ const handleGenerateWebshell = async () => {
 :deep(.el-select .el-input.is-focus .el-input__wrapper),
 :deep(.el-input.is-focus .el-input__wrapper) {
   box-shadow: 0 0 0 1px #409eff inset !important;
+}
+
+/* AI 生成正常业务模板区域 */
+.ai-section {
+  border-top: 1px dashed #dcdfe6;
+  padding-top: 20px;
+}
+
+.ai-section .section-title {
+  border-left-color: #e6a23c;
+}
+
+.ai-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+  font-size: 13px;
+  color: #67c23a;
+}
+
+.ai-code-wrap {
+  width: 100%;
+}
+
+.ai-code-textarea :deep(.el-textarea__inner) {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  line-height: 1.5;
+  border-radius: 4px;
+}
+
+.ai-save-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+  font-size: 12px;
+  color: #909399;
+}
+
+/* 对话框表单滚动支持 */
+.generate-form {
+  max-height: 75vh;
+  overflow-y: auto;
 }
 </style>

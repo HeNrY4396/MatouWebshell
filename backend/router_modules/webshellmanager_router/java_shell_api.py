@@ -23,6 +23,7 @@ import tempfile
 
 from .shell_factory import get_webshell_config_by_id, get_or_create_webshell_instance_by_id
 from . import config as global_config
+from .ReqParameter import ReqParameter
 from .java.javaPayload import javaPayload
 
 # 创建JSP专属功能蓝图
@@ -79,6 +80,73 @@ def ensure_payload_loaded(shell, payload_class_info, payload_name, custom_error_
         error_msg = custom_error_message or f'加载{payload_name}类异常: {str(e)}'
         print(f"[ERROR] {error_msg}")
         return False, "", error_msg
+
+def build_custom_payload_parameter(method_name, payload_param):
+    """
+    构造自定义Payload执行参数
+    """
+    parameter = ReqParameter()
+    parameter.add("methodName", str(method_name))
+
+    for key, value in payload_param.items():
+        if key == "methodName":
+            continue
+
+        param_key = str(key)
+        if value is None:
+            parameter.add(param_key, "")
+        elif isinstance(value, str):
+            parameter.add(param_key, value)
+        elif isinstance(value, (dict, list)):
+            parameter.add(param_key, json.dumps(value, ensure_ascii=False))
+        else:
+            parameter.add(param_key, str(value))
+
+    return parameter
+
+def execute_custom_payload_internal(shell, payload_code, method_name, payload_param):
+    """
+    执行自定义Payload的公共逻辑
+    """
+    payload_class_info = java_payload.getCustomPayload(source_code=payload_code)
+    original_class_name = java_payload.extract_class_name_from_source(payload_code)
+
+    # 使用源码摘要作为缓存键，避免相同插件重复加载
+    payload_hash = hashlib.md5(payload_code.encode('utf-8')).hexdigest()[:12]
+    payload_name = f"CustomPayload_{original_class_name}_{payload_hash}"
+    success, payload_classname, error_msg = ensure_payload_loaded(
+        shell,
+        payload_class_info,
+        payload_name,
+        '加载自定义Payload失败'
+    )
+    if not success:
+        return False, {
+            'status': 'error',
+            'message': error_msg
+        }, 500
+
+    parameter = build_custom_payload_parameter(method_name, payload_param)
+    result_bytes = shell.eval_func(payload_classname, None, parameter)
+    if result_bytes is None:
+        return False, {
+            'status': 'error',
+            'message': 'Payload执行失败，未返回结果'
+        }, 500
+
+    result_text = result_bytes.decode('utf-8', errors='ignore')
+    return True, {
+        'status': 'success',
+        'message': 'Payload执行成功',
+        'data': {
+            'pluginName': original_class_name,
+            'className': payload_classname,
+            'originalClassName': original_class_name,
+            'methodName': method_name,
+            'param': payload_param,
+            'output': result_text
+        }
+    }, 200
 
 # ====== 执行命令接口 ======
 
@@ -760,6 +828,166 @@ def move_file():
             'message': f'服务器错误: {str(e)}'
         }), 500
 
+@java_shell_bp.route('/executePayload', methods=['POST'])
+def execute_Payload():
+    """执行自定义Java Payload"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'status': 'error', 'message': '请求参数不能为空'}), 400
+
+        webshell_id = data.get('webshell_id')
+        payload_code = data.get('payloadCode')
+        plugin_name = data.get('pluginName')
+        method_name = data.get('methodName')
+        payload_param = data.get('param', {})
+
+        # 参数验证
+        if not webshell_id:
+            return jsonify({'status': 'error', 'message': 'Webshell ID不能为空'}), 400
+        if not payload_code and not plugin_name:
+            return jsonify({'status': 'error', 'message': 'Payload源码或插件名至少需要提供一个'}), 400
+        if not method_name:
+            return jsonify({'status': 'error', 'message': '方法名不能为空'}), 400
+        if payload_param is None:
+            payload_param = {}
+        if not isinstance(payload_param, dict):
+            return jsonify({'status': 'error', 'message': 'param参数必须是JSON对象'}), 400
+
+        # 获取webshell实例
+        shell = get_or_create_webshell_instance_by_id(webshell_id)
+        if not shell:
+            return jsonify({'status': 'error', 'message': 'Webshell实例创建失败'}), 500
+
+        if not hasattr(shell, 'include') or not hasattr(shell, 'eval_func'):
+            return jsonify({'status': 'error', 'message': '当前webshell类型不支持自定义Payload功能'}), 400
+
+        if not payload_code and plugin_name:
+            payload_info = java_payload.getCustomPayloadCode(plugin_name)
+            payload_code = payload_info["source_code"]
+
+        success, response_data, status_code = execute_custom_payload_internal(
+            shell,
+            payload_code,
+            method_name,
+            payload_param
+        )
+        return jsonify(response_data), status_code
+
+    except ValueError as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 400
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': f'服务器错误: {str(e)}'
+        }), 500
+
+@java_shell_bp.route('/saveCustomPayload', methods=['POST'])
+def save_custom_payload():
+    """保存自定义Payload插件"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'status': 'error', 'message': '请求参数不能为空'}), 400
+
+        payload_code = data.get('payloadCode')
+        old_plugin_name = data.get('oldPluginName')
+        if not payload_code:
+            return jsonify({'status': 'error', 'message': 'Payload源码不能为空'}), 400
+
+        payload_info = java_payload.saveCustomPayload(payload_code)
+        if old_plugin_name and old_plugin_name != payload_info["plugin_name"]:
+            try:
+                java_payload.deleteCustomPayload(old_plugin_name)
+            except ValueError:
+                pass
+
+        return jsonify({
+            'status': 'success',
+            'message': '插件保存成功',
+            'data': {
+                'pluginName': payload_info["plugin_name"],
+                'className': payload_info["class_name"]
+            }
+        })
+    except ValueError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+@java_shell_bp.route('/listCustomPayloads', methods=['GET'])
+def list_custom_payloads():
+    """获取自定义Payload插件列表"""
+    try:
+        payload_list = java_payload.listCustomPayloads()
+        for item in payload_list:
+            item["updatedAtText"] = datetime.datetime.fromtimestamp(item["updatedAt"]).strftime('%Y-%m-%d %H:%M:%S')
+
+        return jsonify({
+            'status': 'success',
+            'message': '获取插件列表成功',
+            'data': payload_list
+        })
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+@java_shell_bp.route('/getCustomPayloadDetail', methods=['POST'])
+def get_custom_payload_detail():
+    """获取自定义Payload插件详情"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'status': 'error', 'message': '请求参数不能为空'}), 400
+
+        plugin_name = data.get('pluginName')
+        if not plugin_name:
+            return jsonify({'status': 'error', 'message': '插件名不能为空'}), 400
+
+        payload_info = java_payload.getCustomPayloadCode(plugin_name)
+        return jsonify({
+            'status': 'success',
+            'message': '获取插件详情成功',
+            'data': {
+                'pluginName': payload_info["plugin_name"],
+                'className': payload_info["class_name"],
+                'payloadCode': payload_info["source_code"]
+            }
+        })
+    except ValueError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+@java_shell_bp.route('/deleteCustomPayload', methods=['POST'])
+def delete_custom_payload():
+    """删除自定义Payload插件"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'status': 'error', 'message': '请求参数不能为空'}), 400
+
+        plugin_name = data.get('pluginName')
+        if not plugin_name:
+            return jsonify({'status': 'error', 'message': '插件名不能为空'}), 400
+
+        java_payload.deleteCustomPayload(plugin_name)
+        return jsonify({
+            'status': 'success',
+            'message': '插件删除成功'
+        })
+    except ValueError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
 @java_shell_bp.route('/zip', methods=['POST'])
 def zip():
     """压缩文件"""
@@ -827,7 +1055,6 @@ def zip():
             'status': 'error',
             'message': f'服务器错误: {str(e)}'
         }), 500
-
 
 @java_shell_bp.route('/unzip', methods=['POST'])
 def unzip():
@@ -2679,6 +2906,108 @@ def execute_sql():
             'message': f'服务器错误: {str(e)}'
         }), 500
 
+@java_shell_bp.route('/generatePayload', methods=['POST'])
+def generate_payload():
+    from .agent import JavaPayloadAgent, PayloadAgentConfig
+    """根据需求生成自定义 Java Payload 源码"""
+    try:
+        data = request.json or {}
+        requirement = (data.get('requirement') or '').strip()
+        if not requirement:
+            return jsonify({'status': 'error', 'message': '需求描述不能为空'}), 400
+
+        llm_cfg = global_config.load_global_config().get('llm', {})
+        provider = (llm_cfg.get('provider') or 'openai').strip()
+        base_url = (llm_cfg.get('baseUrl') or '').strip()
+        model_name = (llm_cfg.get('model') or '').strip()
+        api_key = (llm_cfg.get('apiKey') or '').strip()
+        temperature = float(llm_cfg.get('temperature', 0.1) or 0.1)
+        max_compile_attempts = 3
+
+        if not api_key:
+            return jsonify({
+                'status': 'error',
+                'message': 'LLM API Key 未配置，请先在 WebshellConfig 中保存 LLM 配置'
+            }), 400
+        if not model_name:
+            return jsonify({
+                'status': 'error',
+                'message': 'LLM 模型名称未配置，请先在 WebshellConfig 中保存 LLM 配置'
+            }), 400
+        if provider not in ['openai', 'codex_proxy', 'gemini_proxy']:
+            return jsonify({
+                'status': 'error',
+                'message': f'不支持的 LLM provider: {provider}'
+            }), 400
+        if provider in ('codex_proxy', 'gemini_proxy') and not base_url:
+            return jsonify({
+                'status': 'error',
+                'message': f'使用 {provider} 时必须配置 Base URL'
+            }), 400
+
+        agent = JavaPayloadAgent(
+            PayloadAgentConfig(
+                api_key=api_key,
+                model_name=model_name,
+                base_url=base_url or None,
+                provider=provider,
+                temperature=temperature,
+                max_compile_attempts=max_compile_attempts,
+            )
+        )
+        result = agent.run(requirement)
+
+        generated_code = result.get('generated_code', '') or ''
+        if not generated_code.strip():
+            return jsonify({
+                'status': 'error',
+                'message': result.get('compile_message') or 'AI 未返回可用的 Java Payload 源码',
+                'data': result,
+            }), 400
+
+        try:
+            class_name = java_payload.extract_class_name_from_source(generated_code)
+        except Exception:
+            class_name = ''
+
+        if not result.get('compile_success'):
+            return jsonify({
+                'status': 'error',
+                'message': result.get('compile_message') or 'Java Payload 生成失败',
+                'data': {
+                    'payloadCode': generated_code,
+                    'className': class_name,
+                    'methodName': result.get('method_name', ''),
+                    'paramExample': result.get('param_example', {}),
+                    'compileSuccess': False,
+                    'compileAttempts': result.get('compile_attempts', 0),
+                    'compileMessage': result.get('compile_message', ''),
+                    'rawResponse': result.get('raw_response', ''),
+                }
+            }), 400
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Java Payload 生成成功',
+            'data': {
+                'payloadCode': generated_code,
+                'className': class_name,
+                'methodName': result.get('method_name', ''),
+                'paramExample': result.get('param_example', {}),
+                'compileSuccess': True,
+                'compileAttempts': result.get('compile_attempts', 0),
+                'compileMessage': result.get('compile_message', ''),
+                'rawResponse': result.get('raw_response', ''),
+            }
+        })
+    except ValueError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': f'生成 Payload 失败: {str(e)}'
+        }), 500
 
 def parse_database_query_result(result_data):
     """

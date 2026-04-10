@@ -10,10 +10,13 @@ class javaPayload:
     def __init__(self):
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.payload_dir = os.path.join(self.base_dir, "payload")
+        self.custom_payload_dir = os.path.join(self.payload_dir, "custom")
         self.javac_path = os.path.join(self.payload_dir, "jdk/bin/javac")
         self.class_names_file = os.path.join(self.payload_dir, "classNames.txt")
         self.class_names = self._load_class_names()
         self.obfuscated_payload_dir = os.path.join(self.payload_dir, "obfuscated_payload")
+        os.makedirs(self.custom_payload_dir, exist_ok=True)
+        os.makedirs(self.obfuscated_payload_dir, exist_ok=True)
         
     def _load_class_names(self):
         """从文件中加载类名列表"""
@@ -94,6 +97,28 @@ class javaPayload:
             content = f"package {package};\n\n{content}"
         
         return {"classname": classname, "class_content": content}
+
+    def extract_class_name_from_source(self, source_code):
+        """
+        从Java源码中提取类名
+        :param source_code: Java源码
+        :return: 类名
+        """
+        if not source_code or not str(source_code).strip():
+            raise ValueError("Payload源码不能为空")
+
+        source_code = str(source_code)
+        class_patterns = [
+            r'\bpublic\s+class\s+([A-Za-z_][A-Za-z0-9_]*)\b',
+            r'\bclass\s+([A-Za-z_][A-Za-z0-9_]*)\b'
+        ]
+
+        for pattern in class_patterns:
+            match = re.search(pattern, source_code)
+            if match:
+                return match.group(1)
+
+        raise ValueError("无法从Payload源码中解析类名")
 
     
     # 生成随机字符串
@@ -319,6 +344,143 @@ class javaPayload:
             payload_class_content = f.read()
         
         # 删除java文件
+        os.remove(obfuscated_payload_java_file)
+        os.remove(obfuscated_payload_class_file)
+
+        return {"classname": payload_obfuscated_classname, "class_content": payload_class_content}
+
+    def saveCustomPayload(self, source_code):
+        """
+        保存自定义payload源码到custom目录
+        :param source_code: 用户提交的Java源码
+        :return: 保存后的基础信息
+        """
+        class_name = self.extract_class_name_from_source(source_code)
+        payload_file = os.path.join(self.custom_payload_dir, f"{class_name}.java")
+
+        with open(payload_file, 'w', encoding='utf-8') as f:
+            f.write(str(source_code))
+
+        return {
+            "plugin_name": class_name,
+            "class_name": class_name,
+            "file_path": payload_file
+        }
+
+    def getCustomPayloadCode(self, plugin_name):
+        """
+        获取已保存的自定义payload源码
+        :param plugin_name: 插件名
+        :return: 源码内容和类名
+        """
+        if not plugin_name or not str(plugin_name).strip():
+            raise ValueError("插件名不能为空")
+
+        plugin_name = str(plugin_name).strip()
+        payload_file = os.path.join(self.custom_payload_dir, f"{plugin_name}.java")
+        if not os.path.exists(payload_file):
+            raise ValueError(f"插件 {plugin_name} 不存在")
+
+        with open(payload_file, 'r', encoding='utf-8') as f:
+            source_code = f.read()
+
+        class_name = self.extract_class_name_from_source(source_code)
+        return {
+            "plugin_name": plugin_name,
+            "class_name": class_name,
+            "source_code": source_code,
+            "file_path": payload_file
+        }
+
+    def listCustomPayloads(self):
+        """
+        获取自定义payload列表
+        :return: 插件列表
+        """
+        payload_list = []
+        for file_name in sorted(os.listdir(self.custom_payload_dir)):
+            if not file_name.endswith('.java'):
+                continue
+
+            file_path = os.path.join(self.custom_payload_dir, file_name)
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    source_code = f.read()
+                class_name = self.extract_class_name_from_source(source_code)
+            except Exception:
+                class_name = os.path.splitext(file_name)[0]
+
+            stat = os.stat(file_path)
+            payload_list.append({
+                "pluginName": os.path.splitext(file_name)[0],
+                "className": class_name,
+                "fileName": file_name,
+                "updatedAt": stat.st_mtime
+            })
+
+        payload_list.sort(key=lambda item: item["updatedAt"], reverse=True)
+        return payload_list
+
+    def deleteCustomPayload(self, plugin_name):
+        """
+        删除自定义payload源码
+        :param plugin_name: 插件名
+        :return: 删除结果
+        """
+        if not plugin_name or not str(plugin_name).strip():
+            raise ValueError("插件名不能为空")
+
+        plugin_name = str(plugin_name).strip()
+        payload_file = os.path.join(self.custom_payload_dir, f"{plugin_name}.java")
+        if not os.path.exists(payload_file):
+            raise ValueError(f"插件 {plugin_name} 不存在")
+
+        os.remove(payload_file)
+        return True
+
+    def getCustomPayload(self, source_code, obfuscation_method=JSP_CLASSNAME_OBFUSCATION, specified_name=JSP_SPECIFIED_CLASSNAME):
+        """
+        获取自定义payload
+        :param source_code: 用户提交的Java源码
+        :param obfuscation_method: 混淆方法
+        :param specified_name: 指定类名
+        :return: 包含类名和类内容的字典
+        """
+        if not source_code or not str(source_code).strip():
+            raise ValueError("Payload源码不能为空")
+
+        source_code = str(source_code)
+        class_name = self.extract_class_name_from_source(source_code)
+
+        # 将用户源码持久化到custom目录，便于后续作为插件进行复用
+        payload_info = self.saveCustomPayload(source_code)
+        payload_file = payload_info["file_path"]
+
+        obfuscated_result = self.obfuscate_class_name(
+            payload_file,
+            class_name,
+            obfuscation_method,
+            specified_name
+        )
+        payload_obfuscated_classname = obfuscated_result["classname"]
+        payload_java_content = obfuscated_result["class_content"]
+
+        obfuscated_payload_java_file = os.path.join(
+            self.obfuscated_payload_dir,
+            f"{payload_obfuscated_classname}.java"
+        )
+        with open(obfuscated_payload_java_file, 'w', encoding='utf-8') as f:
+            f.write(payload_java_content)
+
+        self.compileJavaFile(obfuscated_payload_java_file)
+
+        obfuscated_payload_class_file = os.path.join(
+            self.obfuscated_payload_dir,
+            f"{payload_obfuscated_classname}.class"
+        )
+        with open(obfuscated_payload_class_file, 'rb') as f:
+            payload_class_content = f.read()
+
         os.remove(obfuscated_payload_java_file)
         os.remove(obfuscated_payload_class_file)
 
